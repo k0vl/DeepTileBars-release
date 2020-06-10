@@ -1,11 +1,13 @@
+#!/usr/bin/env python3
+
 import utils
 import json
 import os
-
+from tqdm import tqdm
 
 def generate_querymap():
     query_map = {}
-    for line in open("data/08.million-query-topics", encoding='iso-8859-1'):
+    for line in tqdm(open("data/08.million-query-topics", encoding='iso-8859-1')):
         qid, query = line.split(":")
         query_map[qid] = ' '.join(utils.tokenize(query.strip()))
     json.dump(query_map, open("data/query_map.json", "w"), indent=2)
@@ -75,4 +77,4 @@ def split_dataset():
 
 if __name__ == "__main__":
     generate_querymap()
-    split_dataset()
+    # split_dataset()
