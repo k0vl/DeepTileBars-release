@@ -31,6 +31,8 @@ enter the virtual environment shell via
 * TREC45 documents: `data2/corpus/trec45-processed.xml`
 
 * qrels: `data2/qrels.trec6-8.nocr`
+
+Note: this repo uses Git LFS to store the large files. You may need to download these manually from github.com. 
  
 ### 1 Preprocessing
 ```bash
