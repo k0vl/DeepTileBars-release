@@ -13,3 +13,4 @@ qrels
 eval/MQ2008_test.txt
 
 !data2/qrels/
+!data2/result/
