@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 class TrecWebParser:
 
     def __init__(self, file_path, encoding):
@@ -10,7 +12,7 @@ class TrecWebParser:
             doc = self.read_doc()
 
     def read_doc(self):
-        doc_no, dochdr, content = "", "", ""
+        doc_no, content = "", ""
         line = self.file.readline()
         while not line.startswith("<DOC>"):
             line = self.file.readline()
@@ -23,20 +25,24 @@ class TrecWebParser:
         doc_no = line.strip().lstrip("<DOCNO>").rstrip("</DOCNO>")
 
         line = self.file.readline()
-        while not line.startswith("<DOCHDR>"):
-            line = self.file.readline()
-        dochdr = line
-        line = self.file.readline()
-        while not line.startswith("</DOCHDR>"):
-            dochdr += line
-            line = self.file.readline()
+        
+        # no such tag in TREC45
+        # while not line.startswith("<DOCHDR>"):
+        #     line = self.file.readline()
+        #     print(line)
+        # dochdr = line
+        
+        # line = self.file.readline()
+        # while not line.startswith("</DOCHDR>"):
+        #     dochdr += line
+        #     line = self.file.readline()
 
         line = self.file.readline()
         while not line.startswith("</DOC>"):
             content += line
             line = self.file.readline()
 
-        return doc_no, dochdr, content
+        return doc_no, content
 
 
 

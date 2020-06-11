@@ -4,3 +4,8 @@ __pycache__
 .DS_Store
 MQ2008
 lfs/
+data2/clean
+data2/corpus
+data2/segmented
+qrels
+eval/MQ2008_test.txt

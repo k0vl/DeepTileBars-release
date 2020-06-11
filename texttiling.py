@@ -1,14 +1,14 @@
-from pyspark import SparkContext, SparkConf
+#!/usr/bin/env python3
+
 import os
 from nltk.tokenize import TextTilingTokenizer
 import sys
+from tqdm import tqdm
 
 
 def texttiling(source_direc, dest_direc):
-    conf = SparkConf().setAppName("text_tiling")
-    sc = SparkContext(conf=conf)
 
-    files = sc.parallelize(os.listdir(source_direc))
+    files = os.listdir(source_direc)
 
     tokenizer = TextTilingTokenizer(k=6)
 
@@ -24,8 +24,8 @@ def texttiling(source_direc, dest_direc):
         with open(os.path.join(dest_direc, doc_id), "w") as f:
             print(output, file=f)
 
-    files.map(texttiling_doc).collect()
-
+    for f in tqdm(files):
+        texttiling_doc(f)
 
 if __name__ == "__main__":
     texttiling(sys.argv[1], sys.argv[2])
