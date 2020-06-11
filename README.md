@@ -12,53 +12,52 @@ keras
 krovetzstemmer
 gensim
 ```
+install these dependencies via
+
+```pipenv install```
+
+enter the virtual environment shell via
+
+```pipenv shell```
 
 ## Running the model
 
-### 0 Data Preparing
+### 0 Required files
 
-* Trained gensim word2vec model: name the model as `word2vec.100`, and put it along with its auxiliary files in the `data/` directory.  
+* Trained gensim word2vec model: `data2/word2vec.100`
 
-* Inverse Document Frequency (IDF) file: `data/term2idf.json`, which is essentially a dictionary storing the mapping `word -> idf`. 
+* Queries: `data2/title-queries.301-450`
 
-* Query file: download from [TREC](https://trec.nist.gov/data/million.query/08/08.million-query-topics.10001-20000.gz), unzip and put it in the `data/08.million-query-topics` 
+* TREC45 documents: `data2/corpus/trec45-processed.xml`
 
-* LETOR-MQ2008 file: `./MQ2008/` is the folder downloaded from [Microsoft](https://www.microsoft.com/en-us/research/project/letor-learning-rank-information-retrieval/#!letor-4-0).
+* qrels: `data2/qrels.trec6-8.nocr`
  
 ### 1 Preprocessing
 ```bash
-python preprocess.py
+./preprocess.py data2/qrels.trec6-8.nocr
 ```
-
-
 
 ### 2 Extracting and cleaning documents
  ```bash
-spark-submit --master [your-spark-cluster] --py-files trecweb_parser.py extract_file.py /path/to/corpus /path/to/clean-file
+mkdir /data2/clean
+./extract_file.py /path/to/corpus /data2/clean
 ```
 
 ### 3 TextTiling
-
-__Warning:__ python3 users may need to fix a bug in NLTK follow this [post](https://github.com/nltk/nltk/pull/1863).
-
-_update_: As far as we know, NLTK 3.3.0 has fixed this bug.
-
 ```bash
-spark-submit --master [your-spark-cluster] texttiling.py /path/to/clean-file /path/to/segmented-file
+mkdir /data2/segmented
+./texttiling.py /data2/clean /data2/segmented
 ```
 
 ### 4 Coloring
 ```bash
-spark-submit --master [your-spark-cluster] text2img.py  /path/to/segmented-file /path/to/images
+mkdir /data2/images
+./text2img.py  /data2/segmented /data2/images
 ```
 
 ### 5 Run the model
 ```bash
-python rank.py /path/to/images epochs
-```
-e.g.
-```bash
-python rank.py ./img 5
+./rank.py /data2/images 5
 ```
 
 ## Citation
