@@ -49,6 +49,7 @@ def split_dataset(file):
         folds_test.append(open(os.path.join("data2/qrels", "trec45_S" + str(fold + 1) + ".txt"), "w"))
         folds_train.append(set())
 
+    complete_output = open("data2/eval/trec45_test.txt", "w")
     file.seek(0)
     for line_idx, line in enumerate(tqdm(file)):
         query_id, _, doc_id, relevance = line.split()
@@ -56,6 +57,8 @@ def split_dataset(file):
             continue
         folds_test[line_idx % 5].write(line)
         [s.add(query_id) for i, s in enumerate(folds_train) if i != (line_idx % 5)]
+        complete_output.write(f"{relevance} qid:{query_id} " + " ".join(f"{i}:0.000000" for i in range(1,47)) + f" #docid = {doc_id} inc = 1 prob = 0.0000000\n")
+    complete_output.close()
 
     for fold in range(5):
         folds_test[fold].close()

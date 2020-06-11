@@ -68,9 +68,12 @@ def make_test_data(fold, img_direc="img_tiling"):
     for line in open("data2/qrels/trec45" + "_S" + test_set_map[fold] + ".txt"):
         parts = line.split()
         qid, doc = parts[0], parts[2]
-        if doc in docs:
+        if os.path.exists(os.path.join(img_direc, qid, doc)):
             mat = np.load(str(os.path.join(img_direc, qid, doc)) + ".npy")[:, :, :]
             doc_mat.append(mat)
+        else:
+            doc_mat.append(np.zeros((9, 30, 2))[:, :, :])
+
     return np.asarray(doc_mat)
 
 
@@ -155,7 +158,6 @@ def k_fold(img_direc, epochs=5):
                 pos_data = pos
                 neg_data = neg
             else:
-                print(f"else")
                 pos_data = np.vstack((pos_data, pos))
                 neg_data = np.vstack((neg_data, neg))
 
