@@ -15,8 +15,9 @@ import re
 import math
 import sys
 import numpy as np
+from tqdm import tqdm
 
-rels = json.load(open("data2/qrels/rels_trec45.json"))
+rels = json.load(open("data2/qrels/rels_trec45_2.json"))
 
 
 def make_train_data(qid, img_direc='img'):
@@ -59,15 +60,23 @@ def make_test_data(fold, img_direc="img_tiling"):
         5: "4"
     }
     doc_mat = []
+
+    docs = {}
+    with open("data2/docs.json", 'r') as docs_fp:
+        docs = json.load(docs_fp)
+
     for line in open("data2/qrels/trec45" + "_S" + test_set_map[fold] + ".txt"):
         parts = line.split()
         qid, doc = parts[0], parts[2]
-        mat = np.load(str(os.path.join(img_direc, qid, doc)) + ".npy")[:, :, :]
-        doc_mat.append(mat)
+        if doc in docs:
+            mat = np.load(str(os.path.join(img_direc, qid, doc)) + ".npy")[:, :, :]
+            doc_mat.append(mat)
     return np.asarray(doc_mat)
 
 
 def train(pos_docs, neg_docs, epochs=10):
+    print("train")
+
     query_len, seg_len = 9, 30
     input_shape = (query_len, seg_len, 2)
 

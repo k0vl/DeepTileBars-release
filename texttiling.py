@@ -19,7 +19,7 @@ def texttiling(source_direc, dest_direc):
             segments = tokenizer.tokenize(content)
             output = '\n\n'.join([segment.replace("\n", "\t") for segment in segments])
         except:
-            output = content.replace("\n", "\t")
+            raise
 
         with open(os.path.join(dest_direc, doc_id), "w") as f:
             print(output, file=f)
