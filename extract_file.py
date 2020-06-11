@@ -11,13 +11,13 @@ from tqdm import tqdm
 doc_set = set(json.load(open("data2/docs.json")))
 
 
-def generate_corpus_file_list(corpus_path):
-    file_list = []
-    corpus_path = os.path.abspath(corpus_path)
-    for direc, subdirs, files in os.walk(corpus_path):
-        for f in files:
-            file_list.append(os.path.join(corpus_path, direc, f))
-    return file_list
+# def generate_corpus_file_list(corpus_path):
+#     file_list = []
+#     corpus_path = os.path.abspath(corpus_path)
+#     for direc, subdirs, files in os.walk(corpus_path):
+#         for f in files:
+#             file_list.append(os.path.join(corpus_path, direc, f))
+#     return file_list
 
 def extract_from_trecweb(file_path, extracted_path):
     for docno, content in tqdm(trecweb_parser.TrecWebParser(file_path, 'iso-8859-1')):
@@ -33,17 +33,17 @@ def extract_from_trecweb(file_path, extracted_path):
             print(content.encode(errors='replace').decode(), file=output)
 
 
-def extract(corpus_path, extracted_path):
-    def extract_from_trecweb_(file_path):
-        extract_from_trecweb(file_path, extracted_path)
+# def extract(corpus_path, extracted_path):
+#     def extract_from_trecweb_(file_path):
+#         extract_from_trecweb(file_path, extracted_path)
 
-    corpus_file_list = generate_corpus_file_list(corpus_path)
-    conf = SparkConf().setAppName("extract_file")
-    sc = SparkContext(conf=conf)
+#     corpus_file_list = generate_corpus_file_list(corpus_path)
+#     conf = SparkConf().setAppName("extract_file")
+#     sc = SparkContext(conf=conf)
 
-    os.makedirs(extracted_path, exist_ok=True)
-    files = sc.parallelize(corpus_file_list, numSlices=128)
-    files.map(extract_from_trecweb_).collect()
+#     os.makedirs(extracted_path, exist_ok=True)
+#     files = sc.parallelize(corpus_file_list, numSlices=128)
+#     files.map(extract_from_trecweb_).collect()
 
 
 if __name__ == "__main__":

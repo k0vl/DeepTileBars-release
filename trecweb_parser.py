@@ -22,9 +22,9 @@ class TrecWebParser:
         line = self.file.readline()
         while not line.startswith("<DOCNO>"):
             line = self.file.readline()
-        doc_no = line.strip().lstrip("<DOCNO>").rstrip("</DOCNO>")
+        doc_no = line.strip().lstrip("<DOCNO>").rstrip("</DOCNO>").strip()
 
-        line = self.file.readline()
+        # line = self.file.readline()
         
         # no such tag in TREC45
         # while not line.startswith("<DOCHDR>"):

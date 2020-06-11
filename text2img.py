@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 from pyspark import SparkContext, SparkConf
 from collections import Counter
@@ -7,16 +9,17 @@ import math
 import numpy as np
 from gensim.models import Word2Vec
 import sys
+from tqdm import tqdm
 
 
 def text2img(segment_direc, img_direc):
-    conf = SparkConf().setAppName("text2img")
-    sc = SparkContext(conf=conf)
-    query_map = sc.broadcast(json.load(open("data/query_map.json")))
-    term2idf = sc.broadcast(json.load(open("data/term2idf.json")))
-    word2vec_model = Word2Vec.load("data/word2vec.100")
-    word2vec = sc.broadcast(word2vec_model.wv)
-    del word2vec_model
+    query_map = json.load(open("data2/query_map.json"))
+    term2idf = json.load(open("data2/term2idf.json"))
+    word2vec_model = Word2Vec.load("data2/word2vec.100")
+    word2vec = word2vec_model.wv
+    # del word2vec_model
+
+    print("!!!controller")
 
     def transform2img2(line):
         max_ql, max_bl = 9, 30  # 9 query terms, 30 blocks
@@ -26,7 +29,7 @@ def text2img(segment_direc, img_direc):
         parts = line.strip().split()
         qid, doc = parts[0], parts[2]
 
-        query = query_map.value[qid]
+        query = query_map[qid]
         path = os.path.join(segment_direc, doc)
         if not os.path.exists(path):
             print(qid, doc)
@@ -52,21 +55,21 @@ def text2img(segment_direc, img_direc):
             # doc_temrs = index.tokenize(block)
             doc_temrs = utils.tokenize(block)
             tf = Counter(doc_temrs)
-            doc_vecs = [word2vec.value[term] for term in doc_temrs if term in word2vec.value.vocab]
+            doc_vecs = [word2vec[term] for term in doc_temrs if term in word2vec.vocab]
             for i in range(ql):
                 # if query_terms[i] not in term2idf.value:
                 #    continue
 
                 if tf[query_terms[i]] == 0:
                     matrix[i, j, 0] = -10
-                    if query_terms[i] not in word2vec.value.vocab or len(doc_vecs) == 0:
+                    if query_terms[i] not in word2vec.vocab or len(doc_vecs) == 0:
                         matrix[i, j, 1] = 0
                     else:
-                        query_vec = word2vec.value[query_terms[i]]
+                        query_vec = word2vec[query_terms[i]]
                         diffs = [np.linalg.norm(doc_vec - query_vec) for doc_vec in doc_vecs]
                         matrix[i, j, 1] = math.exp(-min(diffs))
                 else:
-                    if query_terms[i] in term2idf.value:
+                    if query_terms[i] in term2idf.values():
                         matrix[i, j, 0] = tf[query_terms[i]] * term2idf.value[query_terms[i]]
                     else:
                         matrix[i, j, 0] = tf[query_terms[i]]
@@ -76,9 +79,9 @@ def text2img(segment_direc, img_direc):
 
         np.save(os.path.join(img_direc, qid, doc), matrix)
 
-    tuples = sc.textFile("qrels/MQ2008.txt", minPartitions=32)
-
-    tuples.map(transform2img2).collect()
+    with open("data2/qrels.trec6-8.nocr", "r") as f:
+        for line in tqdm(f):
+            transform2img2(line)
 
 
 if __name__ == "__main__":

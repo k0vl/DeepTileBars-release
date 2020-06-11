@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 from keras import backend
 from keras.layers import *
@@ -12,8 +14,9 @@ import datetime
 import re
 import math
 import sys
+import numpy as np
 
-rels = json.load(open("qrels/rels08.json"))
+rels = json.load(open("data2/qrels/rels_trec45.json"))
 
 
 def make_train_data(qid, img_direc='img'):
@@ -56,7 +59,7 @@ def make_test_data(fold, img_direc="img_tiling"):
         5: "4"
     }
     doc_mat = []
-    for line in open("qrels/MQ2008" + "_S" + test_set_map[fold] + ".txt"):
+    for line in open("data2/qrels/trec45" + "_S" + test_set_map[fold] + ".txt"):
         parts = line.split()
         qid, doc = parts[0], parts[2]
         mat = np.load(str(os.path.join(img_direc, qid, doc)) + ".npy")[:, :, :]
@@ -122,25 +125,13 @@ def train(pos_docs, neg_docs, epochs=10):
 
     return backend.function([pos_input], [pos_score])
 
-
-def evaluate(run_file):
-    # run_file = re.escape(run_file)
-    runs = re.escape(run_file + ".txt")
-    output = re.escape(run_file + ".out")
-    arg_str = "perl eval/Eval-Score-4.0.pl eval/MQ2008" + "_test.txt  result/" + runs + " result/" + output + " 0"
-    args = shlex.split(arg_str)
-    result = subprocess.run(args, stdout=subprocess.PIPE)
-    print(result.stdout.decode())
-    print(open("result/"+ run_file + ".out").read())
-
-
 def k_fold(img_direc, epochs=5):
-    os.makedirs("result", exist_ok=True)
+    os.makedirs("data2/result", exist_ok=True)
     run_file = "k_fold_" + str(datetime.datetime.now())
     for fold in range(1, 6):
         print(fold)
 
-        train_topics = json.load(open("qrels/MQ2008" + "_train_" + str(fold) + ".json"))
+        train_topics = json.load(open("data2/qrels/trec45" + "_train_" + str(fold) + ".json"))
         # print(len(train_topics))
         random.shuffle(train_topics)
 
@@ -161,7 +152,7 @@ def k_fold(img_direc, epochs=5):
         doc_mat = make_test_data(fold, img_direc)
         scores = scorer([doc_mat])[0]
 
-        with open(os.path.join("result", run_file + ".txt"), "a") as output:
+        with open(os.path.join("data2/result", run_file + ".txt"), "a") as output:
             output.write(
                 "\n".join([str(scores[i, 0]) for i in range(doc_mat.shape[0])])
                 + "\n"
@@ -169,6 +160,26 @@ def k_fold(img_direc, epochs=5):
 
     evaluate(run_file)
 
+# def evaluate(run_file):
+#     # run_file = re.escape(run_file)
+#     runs = re.escape(run_file + ".txt")
+#     output = re.escape(run_file + ".out")
+
+#     #TODO
+#     arg_str = "perl eval/Eval-Score-4.0.pl eval/MQ2008_test.txt  result/" + runs + " result/" + output + " 0"
+#     args = shlex.split(arg_str)
+#     result = subprocess.run(args, stdout=subprocess.PIPE)
+#     print(result.stdout.decode())
+#     print(open("result/"+ run_file + ".out").read())
+
+def evaluate(run_file):
+    # run_file = re.escape(run_file)
+    runs = re.escape(run_file + ".txt")
+    output = re.escape(run_file + ".out")
+    arg_str = f"trec_eval/trec_eval -q -M2000 -m ndcg_cut test-data/qrels.trec6-8.nocr data2/result/{runs} > data2/result/{output}"
+    result = subprocess.run(arg_str.split(), stdout=subprocess.PIPE, text=True)
+    print(result.stdout)
+    print(open(f"data2/result/{output}").read())
 
 if __name__ == "__main__":
     k_fold(sys.argv[1], int(sys.argv[2]))
