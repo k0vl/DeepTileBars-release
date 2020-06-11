@@ -55,7 +55,7 @@ def split_dataset(file):
         if query_id in all_neg:
             continue
         folds_test[line_idx % 5].write(line)
-        [s.add(query_id) for i, s in enumerate(folds_train) if i != fold]
+        [s.add(query_id) for i, s in enumerate(folds_train) if i != (line_idx % 5)]
 
     for fold in range(5):
         folds_test[fold].close()

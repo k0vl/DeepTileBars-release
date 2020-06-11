@@ -138,21 +138,24 @@ def k_fold(img_direc, epochs=5):
     os.makedirs("data2/result", exist_ok=True)
     run_file = "k_fold_" + str(datetime.datetime.now())
     for fold in range(1, 6):
-        print(fold)
+        print(f"fold {fold}")
 
         train_topics = json.load(open("data2/qrels/trec45" + "_train_" + str(fold) + ".json"))
         # print(len(train_topics))
         random.shuffle(train_topics)
 
         pos_data, neg_data = None, None
-        for i in train_topics:
+        for i in tqdm(train_topics):
             pos, neg = make_train_data(str(i), img_direc)
             if pos is None:
+                print(f"pos is None, skipping...")
                 continue
             if pos_data is None:
+                print(f"pos_data is None")
                 pos_data = pos
                 neg_data = neg
             else:
+                print(f"else")
                 pos_data = np.vstack((pos_data, pos))
                 neg_data = np.vstack((neg_data, neg))
 
@@ -169,26 +172,26 @@ def k_fold(img_direc, epochs=5):
 
     evaluate(run_file)
 
-# def evaluate(run_file):
-#     # run_file = re.escape(run_file)
-#     runs = re.escape(run_file + ".txt")
-#     output = re.escape(run_file + ".out")
-
-#     #TODO
-#     arg_str = "perl eval/Eval-Score-4.0.pl eval/MQ2008_test.txt  result/" + runs + " result/" + output + " 0"
-#     args = shlex.split(arg_str)
-#     result = subprocess.run(args, stdout=subprocess.PIPE)
-#     print(result.stdout.decode())
-#     print(open("result/"+ run_file + ".out").read())
-
 def evaluate(run_file):
     # run_file = re.escape(run_file)
     runs = re.escape(run_file + ".txt")
     output = re.escape(run_file + ".out")
-    arg_str = f"trec_eval/trec_eval -q -M2000 -m ndcg_cut test-data/qrels.trec6-8.nocr data2/result/{runs} > data2/result/{output}"
-    result = subprocess.run(arg_str.split(), stdout=subprocess.PIPE, text=True)
-    print(result.stdout)
-    print(open(f"data2/result/{output}").read())
+
+    #TODO
+    arg_str = "perl eval/Eval-Score-4.0.pl eval/MQ2008_test.txt  result/" + runs + " result/" + output + " 0"
+    args = shlex.split(arg_str)
+    result = subprocess.run(args, stdout=subprocess.PIPE)
+    print(result.stdout.decode())
+    print(open("result/"+ run_file + ".out").read())
+
+# def evaluate(run_file):
+#     # run_file = re.escape(run_file)
+#     runs = re.escape(run_file + ".txt")
+#     output = re.escape(run_file + ".out")
+#     arg_str = f"trec_eval/trec_eval -q -M2000 -m ndcg_cut test-data/qrels.trec6-8.nocr data2/result/{runs} > data2/result/{output}"
+#     result = subprocess.run(arg_str.split(), stdout=subprocess.PIPE, text=True)
+#     print(result.stdout)
+#     print(open(f"data2/result/{output}").read())
 
 if __name__ == "__main__":
     k_fold(sys.argv[1], int(sys.argv[2]))
