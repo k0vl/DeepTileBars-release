@@ -5,8 +5,11 @@ __pycache__
 MQ2008
 lfs/
 data/
-data2/
+data2/*/
+**/word2vec.100*
 eval/
 trec_eval/
 qrels
 eval/MQ2008_test.txt
+
+!data2/qrels/
